@@ -1,0 +1,12 @@
+#PATHFIND PROJECT
+
+##Install instructions:
+ + For linux just run 'make install' or 'make i'.
+ + For mac and windows you need to compile 'pathfind.cpp' (running 'make' will hopefully work , it does require posix threads), then move it somewhere that is in your path.
+
+##Removal instructions
+ + For linux just run 'make remove' or 'make r'.
+ + For mac and windows you will need to locate the binary and delete it.
+
+##Usage:
+ + pathfind -h
