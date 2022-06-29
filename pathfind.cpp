@@ -8,6 +8,11 @@
 #include <vector>
 #include <stack>
 #include <array>
+#include <sys/ioctl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <cstdlib>
+#include <csignal>
 
 #include "Board.h"
 
@@ -20,6 +25,8 @@ bool solveBoard(Board boardInfo, bool show);
 
 void drawBoard(Board boardInfo, bool last);
 void drawBoard(Board boardInfo) {drawBoard(boardInfo, false);}
+
+void exiting(int i);
 
 enum boardStates {
 	EMPTY,
@@ -35,6 +42,7 @@ enum directions {
 };
 
 bool boardProvided = false;
+Board board;
 int delay = 25000000;
 #ifndef _WIN32
 string wallChar = "\033[37m\u2588\033\[0m";
@@ -340,8 +348,8 @@ void drawBoard(Board boardInfo, bool last)
 	int eX = boardInfo.eX;
 	int sY = boardInfo.sY;
 	int sX = boardInfo.sX;
-	int boardY = boardInfo.boardX;
-	int boardX = boardInfo.boardY;
+	int boardY = boardInfo.boardY;
+	int boardX = boardInfo.boardX;
 
 	int cX = boardInfo.cX;
 	int cY = boardInfo.cY;
@@ -411,9 +419,16 @@ void drawBoard(Board boardInfo, bool last)
 				line+=" ";
 			}
 		}
-		lines += line + wallChar + "\n";
+		if(y!=boardY)
+		{
+			lines += line + wallChar + "\n";
+		}
+		else
+		{
+			lines += line + wallChar;
+		}
 	}
-	cout << lines << boardInfo.state << endl;
+	cout << lines;
 	this_thread::sleep_for(std::chrono::nanoseconds(delay));
 	if(!last) { printf("\033[%d;%dH", (0), (0)); }
 }
@@ -421,6 +436,13 @@ void drawBoard(Board boardInfo, bool last)
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
+
+	printf("\e[?25l");
+
+    signal(SIGINT, exiting);
+    signal(SIGABRT, exiting);
+    signal(SIGTERM, exiting);
+    signal(SIGTSTP, exiting);
 
 	int cols = 39;
 	int rows = 39;
@@ -437,8 +459,10 @@ int main(int argc, char *argv[])
 			cout << " -b : The path to a board.txt file\n";
 			cout << " -c : The amount of columns (width) - Default 20 (Note: this doesn't actually correspond to the amount of rows in your terminal it will take up, just the amount of empty cells possible)\n";
 			cout << " -r : The amount of rows (height) - Default 20 (Note: this doesn't actually correspond to the amount of rows in your terminal it will take up, just the amount of empty cells possible)\n";
+			//40*40 by default
 			cout << " -h : Shows help and exits\n";
 			cout << " -t : Time delay between draws of the pathfind visualisation (ms) - Default 25\n";
+			cout << " -f : Fills the terminal screen\n";
 			cout << "\nThe characters in the output:\n";
 			cout << " " + endChar + " : Used to mark the end (Goes in board.txt)\n";
 			cout << " " + startChar + " : Used to mark the start (Goes in board.txt)\n";
@@ -472,19 +496,35 @@ int main(int argc, char *argv[])
 		else if(strcmp(argv[i], "-t") == 0)
 		{
 			if(argc < i+1) { cerr << error; return 1; }
-			delay = stoi(argv[i+1]);
+			delay = stoi(argv[i+1])*1000000;
 			i++;
+		}
+		else if(strcmp(argv[i], "-f") == 0)
+		{
+			struct winsize w;
+			ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+			rows = w.ws_row - 2;
+			cols = w.ws_col - 2;
 		}
 
 	}
 
 	system("clear");
 
-	Board board = genBoard(cols, rows, boardProvided, boardPath);
+	board = genBoard(cols, rows, boardProvided, boardPath);
 
 	system("clear");
 	printf("\033[%d;%dH", (0), (0));
 	solveBoard(board, true);
 
+	exiting(0);
+
 	return 0;
+}
+
+void exiting(int i)
+{
+	printf("\e[?25h\n");
+	system("clear");
+	exit(0);
 }
