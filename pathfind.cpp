@@ -170,10 +170,8 @@ Board genBoard(int cols, int rows, bool boardProvided, string boardPath)
 				x = stack.top()[0];
 				y = stack.top()[1];
 				visited++;
+				drawBoard(boardInfo);
 			}
-
-			drawBoard(boardInfo);
-
 		}
 		boardInfo.boardValues[eY][eX] = END;
 		boardInfo.boardValues[sY][sX] = START;
@@ -525,6 +523,5 @@ int main(int argc, char *argv[])
 void exiting(int i)
 {
 	printf("\e[?25h\n");
-	system("clear");
 	exit(0);
 }
