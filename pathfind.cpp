@@ -49,6 +49,8 @@ string wallChar = "\033[37m\u2588\033\[0m";
 string startChar = "\033[1;33mP\033[0m";
 string endChar = "\033[1;34m@\033[0m";
 string currentChar = "\033[1;32mC\033[0m";
+string pathCharBefore = "\033[33m";
+string pathCharAfter = "\033[0m";
 #else
 string wallChar = "#";
 string startChar = "P";
@@ -382,9 +384,11 @@ void drawBoard(Board boardInfo, bool last)
 			}
 			else if(boardInfo.state>=FINISHED && (boardInfo.path[y][x]||(y==cY&&x==cX)))
 			{
+				line+=pathCharBefore;
 				if(boardInfo.from[y][x][1]==y)
 				{
 					line+="-";
+					line+=pathCharAfter;
 					continue;
 				}
 				else if(boardInfo.from[y][x][0]==x)
@@ -399,12 +403,13 @@ void drawBoard(Board boardInfo, bool last)
 				{
 					line+="/";
 				}
+				line+=pathCharAfter;
 			}
 			else if(boardInfo.state==SOLVING && boardInfo.moved[y][x])
 			{
 				line+=" ";
 			}
-			else if(boardInfo.state>=SOLVING && boardInfo.discovered[y][x])
+			else if(boardInfo.state==SOLVING && boardInfo.discovered[y][x])
 			{
 				line+="+";
 			}
@@ -467,9 +472,11 @@ int main(int argc, char *argv[])
 			cout << " " + wallChar + " : Used to mark a wall ( # goes in board.txt)\n";
 			cout << " (empty) : Used to mark an empty (Goes in board.txt)\n";
 			cout << " + : Used to mark cells that have been looked at but not entered yet\n";
-			cout << " -|/\\ : Used to mark the final path (Only in final draw)\n";
+			cout << " " + pathCharBefore + "-|/\\" + pathCharAfter + " : Used to mark the final path (Only in final draw)\n";
 			cout << " " + currentChar + " : Used to mark the current cell (Only in pathfind visualisation)\n";
 			cout << " ' : Used to mark cells that haven't yet been looked at (Only in pathfind visualisation)\n";
+			printf("\e[?25h\n");
+			exiting(0);
 			return 0;
 		}
 		else if(strcmp(argv[i], "-c") == 0)
@@ -515,6 +522,7 @@ int main(int argc, char *argv[])
 	printf("\033[%d;%dH", (0), (0));
 	solveBoard(board, true);
 
+	printf("\e[?25h\n");
 	exiting(0);
 
 	return 0;

@@ -1,14 +1,16 @@
 .PHONY: install i remove r
 
+DESTDIR:=/usr/local/bin
+
 pathfind: pathfind.cpp
 	g++ pathfind.cpp -o pathfind
 
 install: pathfind
-	sudo mv pathfind /usr/local/bin
+	sudo mv pathfind $(DESTDIR)
 
 i: install
 
 remove:
-	sudo rm /usr/local/bin/pathfind
+	sudo rm $(DESTDIR)/pathfind
 
 r: remove
